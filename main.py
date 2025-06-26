@@ -1,3 +1,4 @@
+from datetime import datetime
 print("--23--6--25--")
 hospital=[]
 medical_staffs={}
@@ -15,9 +16,11 @@ assigned_rooms={}
 patient_report={}
 discharged_patients={}
 
-def register_patient(patient_id, personal_info, medical_history, insurance_info):
+def register_patient(patient_id,name,personal_info, medical_history, insurance_info):
+    if patient_id in emergency:
+        patient[patient_id]={"name":name,"personal_info":personal_info,"medical_history":medical_history,"insurance_info":insurance_info}
     if patient_id  not in patient:
-        patient.update({ patient_id:{
+        patient.update({ patient_id:{"name":name,
                 "personal_info":personal_info,
                 "medical_history":medical_history,
                 "insurance_info":insurance_info}
@@ -44,16 +47,16 @@ def schedule_appointment(patient_id, doctor_id, appointment_date, appointment_ty
                     "appointment_type":appointment_type}
     })
         print(f"""The appointment has been scheduled on {appointment_date}
-        with Dr.{medical_staff[doctor_id]["name"]}""")
+        with Dr.{medical_staffs[doctor_id]["name"]}""")
     else:
         print("Register the patient ")
 
 
-# def create_medical_record(patient_id, doctor_id, diagnosis, treatment, prescription):
+def create_medical_record(patient_id, doctor_id, diagnosis, treatment, prescription):
     if patient_id in patient:
-#     medical_record.update({
-#         patient_id:{"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription}
-#     })
+        medical_record.update({
+            patient_id:{"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription}
+        })
     else:
         print("Register the patient ")
 
@@ -69,15 +72,16 @@ def process_billing(patient_id, services_list, insurance_coverage):
         sum_of_services+=(billing[patient_id]["insurance_coverage"])/100*sum_of_services
     
     if patient_id in assigned_rooms :
-        admi_date=assigned_rooms[patient_id]["admission_date"]
+        global admi_date
+        admi_date=datetime.strptime(assigned_rooms[patient_id]["admission_date"], "%d-%m-%Y")
     if patient_id in discharged_patients:
-        disc_date=discharged_patients[patient_id]["discharge_date"]
+        disc_date=datetime.strptime(discharged_patients[patient_id]["discharge_date"],"%d-%m-%Y")
     print(f"""=== BILLING SUMMARY ===
-Patient: {patient[patient_id]["personal_info"]["name"]}
-Admission Date: {admi_date}
-Discharge Date: {disc_date}
+Patient: {patient[patient_id]["name"]}
+Admission Date: {datetime.strftime(admi_date, "%B %d, %Y")}
+Discharge Date: {datetime.strftime(disc_date, "%B %d, %Y")}
 Service Charges:
-Room Charges ( days):  """)
+Room Charges ({(disc_date-admi_date).days}days): {((disc_date-admi_date).days)*assigned_rooms[patient_id]["room_type"]["price"]}""")
     for key,value in services_list:
         print(f"{key}:{value}")
     sum_of_services=sum(cost for services,cost in services_list) 
@@ -89,18 +93,23 @@ Room Charges ( days):  """)
     
 
 
-# def manage_emergency_admission(patient_id, emergency_type, severity_level):
-#     emergency.update({
-#         patient_id:{"emergency_type":emergency_type,"severity_level":severity_level}
-#     })
-#    
+def manage_emergency_admission(patient_id, emergency_type, severity_level):
+    emergency.update({
+        patient_id:{"emergency_type":emergency_type,"severity_level":severity_level}
+    })
+    patient.update({ patient_id:{"name":None,
+                "personal_info":None,
+                "medical_history":"Emergency",
+                "insurance_info":None}
+    })
+   
 
 # def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
 #     medicine.update({
 #         medication_id:{"quantity":quantity,"expiry_date":expiry_date,"supplier":supplier}
 #     })
 rooms={
-        "general-ward":{"beds":20,
+        "general ward":{"beds":20,
         "price":1500},
         "private room":{"beds":15,
         "price":3000},
@@ -120,7 +129,24 @@ def calculate_treatment_cost(patient_id, treatment_plan, insurance_details):
     pass
 def generate_patient_report(patient_id, report_type):
     patient_report.update({patient_id:report_type})
-    return patient_report
+    print(f"""Patient Name : {patient[patient_id]["name"]} ('ID'{patient_id})
+          Age : {patient[patient_id]["personal_info"]["age"]}| Gender :{patient[patient_id]["personal_info"]["gender"]}| Blood Type : {patient[patient_id]["personal_info"]["blood_type"]}
+Insurance : {patient[patient_id]["insurance_info"]["company"]} ('ID'{patient[patient_id]["insurance_info"]["policy_no"]})""")
+    if patient_id in discharged_patients:
+        status = "Discharged"
+    elif patient_id in assigned_rooms:
+        status = "Inpatient"
+    else :
+        status = "Outpatient"
+    print(f"Current Status : {status}")
+    print(f"Room : {assigned_rooms[patient_id]["room_type"]}")
+    print(f"Admiited : {datetime.strftime(admi_date, "%B %d, %Y")}")
+    print(f"Attending Doctor : ------------ ")
+    today=datetime.today()
+    print(f"Recent Vitals ({datetime.strftime(today,"%B %d, %Y - %H:%M %p")}:)")
+    for key,value in report_type:
+        print(f"{key}:{value}")
+    print("Active Medications : ")
 def analyze_hospital_efficiency(metrics_type, time_period):
     pass
 def manage_discharge_process(patient_id, discharge_date, follow_up_instructions):
