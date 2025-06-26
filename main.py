@@ -52,7 +52,7 @@ def process_billing(patient_id, services_list, insurance_coverage):
         "service_list":services_list,
         "insurance_coverage":insurance_coverage}
     })
-    sum_of_services=(cost for services,cost in services_list) 
+    sum_of_services=sum(cost for services,cost in services_list) 
     if billing[patient_id]["insurance_coverage"] :
         sum_of_services+=(billing[patient_id]["insurance_coverage"])/100*sum_of_services
     
@@ -89,7 +89,7 @@ def calculate_treatment_cost(patient_id, treatment_plan, insurance_details):
 def generate_patient_report(patient_id, report_type):
     patient_report.update({patient_id:report_type})
     return patient_report
-def analyze_hospital_efficiency(metrics_type, time_period)
+def analyze_hospital_efficiency(metrics_type, time_period):
     pass
 def manage_discharge_process(patient_id, discharge_date, follow_up_instructions):
     if patient_id in assigned_rooms:
