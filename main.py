@@ -29,6 +29,11 @@ def register_patient(patient_id,name,personal_info, medical_history, insurance_i
 
     else:
         print("Already Registered")
+register_patient(123,"Romi",{"age":21,"gender":"Male","blood_type":"O+"},"Diabetes",{"company":"Star Health","policy_no":92394412})
+
+# shift_schedule = [
+#     {"day": "Monday", "start_time": "08:00", "end_time": "16:00", "location": "ICU"},
+# ]
 
 def add_medical_staff(staff_id, name, specialization, shift_schedule, contact_info):
    medical_staffs.update({
@@ -37,23 +42,65 @@ def add_medical_staff(staff_id, name, specialization, shift_schedule, contact_in
             "shift_schedule":shift_schedule,
             "contact_info":contact_info}   
    })
+   print(f"Medical Staff ('ID'{staff_id}) is added ")
+add_medical_staff(101123,"Dr.Subhash Rao","General Doctor",[
+    {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
+    {"day": "Tuesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "OPD"},
+    {"day": "Wednesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Wards"},
+    {"day": "Thursday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Emergency"},
+    {"day": "Friday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
+    {"day": "Saturday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "OPD/Wards"},
+    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}] , 9929929292)
+add_medical_staff(101243,"Dr.Jay Kumar","Cardiologist",[
+    {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology OPD"},
+    {"day": "Tuesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology Ward"},
+    {"day": "Wednesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "ICU"},
+    {"day": "Thursday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cath Lab"},
+    {"day": "Friday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "OPD & Ward"},
+    {"day": "Saturday", "shift": "On Call", "start": "-", "end": "-", "location": "-"},
+    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}
+], 8800978213)
+add_medical_staff(101143,"Dr.Santosh","Neurologist",[
+    {"day": "Monday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Neuro OPD"},
+    {"day": "Tuesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Neuro Ward"},
+    {"day": "Wednesday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "Neurology & ICU"},
+    {"day": "Thursday", "shift": "Off", "start": "-", "end": "-", "location": "-"},
+    {"day": "Friday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Neuro OPD"},
+    {"day": "Saturday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Neuro Ward"},
+    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}
+], 7800978543)
 
 
-def schedule_appointment(patient_id, doctor_id, appointment_date, appointment_type):
-    if patient_id in patient:
+def schedule_appointment(patient_id, doctor_id, appointment_date, appointment_type,charges):
+    if patient_id in patient and doctor_id in medical_staffs:
         appointment.update({
-        patient_id:{"doctor_id":doctor_id,
+        doctor_id:{"patient_id":patient_id ,
                     "appointment_date":appointment_date,
-                    "appointment_type":appointment_type}
+                    "appointment_type":appointment_type,
+                    "charges":charges}
     })
-        print(f"""The appointment has been scheduled on {appointment_date}
-        with Dr.{medical_staffs[doctor_id]["name"]}""")
+        print(f"""The appointment has been scheduled at {appointment_date}
+with {medical_staffs[doctor_id]["name"]}""")
     else:
         print("Register the patient ")
 
+schedule_appointment(123, 101123, '21-7-2025', "Consultation",1500)
+def doctors_schedule(doctor_id):
+    print(f"{medical_staffs[doctor_id]["name"]} - ({medical_staffs[doctor_id]["specialization"]})")
+    today=datetime.today()
+    print(datetime.strftime(today,"%B %d, %Y"))
+
+    for i in appointment[doctor_id]:
+        if i=="charges":
+            break
+        print(f"{i}:{appointment[doctor_id][i]}")
+doctors_schedule(101123)
+        
+
 
 def create_medical_record(patient_id, doctor_id, diagnosis, treatment, prescription):
-    if patient_id in patient:
+ 
+    if patient_id in appointment[doctor_id]:
         medical_record.update({
             patient_id:{"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription}
         })
@@ -76,12 +123,14 @@ def process_billing(patient_id, services_list, insurance_coverage):
         admi_date=datetime.strptime(assigned_rooms[patient_id]["admission_date"], "%d-%m-%Y")
     if patient_id in discharged_patients:
         disc_date=datetime.strptime(discharged_patients[patient_id]["discharge_date"],"%d-%m-%Y")
+    doctor=create_medical_record[patient_id]["doctor_id"]
     print(f"""=== BILLING SUMMARY ===
 Patient: {patient[patient_id]["name"]}
 Admission Date: {datetime.strftime(admi_date, "%B %d, %Y")}
 Discharge Date: {datetime.strftime(disc_date, "%B %d, %Y")}
 Service Charges:
-Room Charges ({(disc_date-admi_date).days}days): {((disc_date-admi_date).days)*assigned_rooms[patient_id]["room_type"]["price"]}""")
+Room Charges ({(disc_date-admi_date).days}days): {((disc_date-admi_date).days)*assigned_rooms[patient_id]["room_type"]["price"]}
+Doctor Consultation : {appointment[doctor]["charges"]}""")
     for key,value in services_list:
         print(f"{key}:{value}")
     sum_of_services=sum(cost for services,cost in services_list) 
@@ -116,18 +165,19 @@ rooms={
         "emergency room":{"beds":10,
         "price":5000}
     }    
-# def assign_room(patient_id, room_type, admission_date, expected_duration):
-#    
-#     room_type=room_type.lower()
-#     if rooms[room_type]["beds"]>0:
-#         assigned_rooms.update({patient_id:{"room_type":room_type,"admission_date":admission_date,"exp_duaration":expected_duration}})
-#         rooms[room_type]["beds"]-=1
-#     else:
-#         print(f"Currently the {room_type} is unavailable Opt for other rooms")
+def assign_room(patient_id, room_type, admission_date, expected_duration):
+   
+    room_type=room_type.lower()
+    if rooms[room_type]["beds"]>0:
+        assigned_rooms.update({patient_id:{"room_type":room_type,"admission_date":admission_date,"exp_duaration":expected_duration}})
+        rooms[room_type]["beds"]-=1
+    else:
+        print(f"Currently the {room_type} is unavailable Opt for other rooms")
 
 def calculate_treatment_cost(patient_id, treatment_plan, insurance_details):
     pass
 def generate_patient_report(patient_id, report_type):
+ if patient_id in medical_record:
     patient_report.update({patient_id:report_type})
     print(f"""Patient Name : {patient[patient_id]["name"]} ('ID'{patient_id})
           Age : {patient[patient_id]["personal_info"]["age"]}| Gender :{patient[patient_id]["personal_info"]["gender"]}| Blood Type : {patient[patient_id]["personal_info"]["blood_type"]}
@@ -147,6 +197,10 @@ Insurance : {patient[patient_id]["insurance_info"]["company"]} ('ID'{patient[pat
     for key,value in report_type:
         print(f"{key}:{value}")
     print("Active Medications : ")
+    for key,value in medical_record[patient_id]["prescription"]:
+        print(f"-{key}:{value}")
+ else:
+     print("Create the Medical Record of the pateint")
 def analyze_hospital_efficiency(metrics_type, time_period):
     pass
 def manage_discharge_process(patient_id, discharge_date, follow_up_instructions):
