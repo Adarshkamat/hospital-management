@@ -37,11 +37,30 @@ while i<len(a):
     i+=1
 print(l)
     
-dic={"doctor_id":{"patient_id":11,
+dic={"patient_id":11,
                     "appointment_date":23,
-                    "appointment_type":2}}
+                    "appointment_type":2}
+            
+for j,k in dic.items():
+    print(f"{k}:{j}")
 
-for i in dic:
-    print(i)
-    for j in dic[i]:
-        print(f"{j}:{dic[i][j]}")
+# for i in dic:
+#     print(i)
+#     for j in dic[i]:
+#         print(f"{j}:{dic[i][j]}")
+
+
+rooms={
+        "general ward":{"beds":20,
+        "price":1500},
+        "private room":{"beds":15,
+        "price":3000},
+        "emergency room":{"beds":10,
+        "price":5000}
+    } 
+Sum=0
+for i in rooms:
+    for j in rooms[i]:
+        if j!="price":
+            Sum+=rooms[i][j]
+print(Sum)

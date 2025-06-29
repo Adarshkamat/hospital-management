@@ -1,6 +1,6 @@
 from datetime import datetime
 print("--23--6--25--")
-hospital=[]
+
 medical_staffs={}
 patient= {}
 
@@ -15,6 +15,9 @@ medicine={}
 assigned_rooms={}
 patient_report={}
 discharged_patients={}
+
+hopspital_efficiency=[]
+records={}
 
 def register_patient(patient_id,name,personal_info, medical_history, insurance_info):
     if patient_id in emergency:
@@ -114,9 +117,7 @@ def process_billing(patient_id, services_list, insurance_coverage):
         "service_list":services_list,
         "insurance_coverage":insurance_coverage}
     })
-    sum_of_services=sum(cost for services,cost in services_list) 
-    if billing[patient_id]["insurance_coverage"] :
-        sum_of_services+=(billing[patient_id]["insurance_coverage"])/100*sum_of_services
+    
     
     if patient_id in assigned_rooms :
         global admi_date
@@ -134,11 +135,15 @@ Doctor Consultation : {appointment[doctor]["charges"]}""")
     for key,value in services_list:
         print(f"{key}:{value}")
     sum_of_services=sum(cost for services,cost in services_list) 
-    print(f"Total bill : ",sum_of_services)
+    Sum_fo_Serices=sum_of_services+{appointment[doctor]["charges"]}+{((disc_date-admi_date).days)*assigned_rooms[patient_id]["room_type"]["price"]}
+    print(f"Total bill : {Sum_fo_Serices})
     if billing[patient_id]["insurance_coverage"] :
-        after_insurance=(billing[patient_id]["insurance_coverage"])/100*sum_of_services+sum_of_services
-    print(f"Insurance ({billing[patient_id]["insurance_coverage"]}) : {after_insurance}")
-    print(f"patient responsibility : {sum_of_services-after_insurance}")
+        after_insurance=(billing[patient_id]["insurance_coverage"])/100*Sum_fo_Serices+Sum_fo_Serices
+        print(f"Insurance ({billing[patient_id]["insurance_coverage"]}) : {after_insurance}")
+        print(f"patient responsibility : {Sum_fo_Serices-after_insurance}")
+    else:
+        print("You have no insurance coverage")
+        print(f"Patient Responsibility : {Sum_fo_Serices}")
     
 
 
@@ -153,10 +158,16 @@ def manage_emergency_admission(patient_id, emergency_type, severity_level):
     })
    
 
-# def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
-#     medicine.update({
-#         medication_id:{"quantity":quantity,"expiry_date":expiry_date,"supplier":supplier}
-#     })
+def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
+    expiry_date=datetime.strptime(expiry_date,"%d-%m-%Y")
+    today=datetime.today()
+    if expiry_date>=today:
+        print("THE MEDICINE HAS EXPIRED")
+    else:
+        medicine.update({
+            medication_id:{"quantity":quantity,"expiry_date":expiry_date,"supplier":supplier}
+        })
+        print("The Medicine has been added to the inventory!")
 rooms={
         "general ward":{"beds":20,
         "price":1500},
@@ -171,11 +182,35 @@ def assign_room(patient_id, room_type, admission_date, expected_duration):
     if rooms[room_type]["beds"]>0:
         assigned_rooms.update({patient_id:{"room_type":room_type,"admission_date":admission_date,"exp_duaration":expected_duration}})
         rooms[room_type]["beds"]-=1
+        patient[patient_id]["room_type"]=room_type
     else:
         print(f"Currently the {room_type} is unavailable Opt for other rooms")
 
 def calculate_treatment_cost(patient_id, treatment_plan, insurance_details):
-    pass
+    ins=insurance_details
+    cost=0
+    for plan,price in treatment_plan.items():
+        cost=sum(price)
+    if patient_id in assigned_rooms :
+        
+        admi_date=datetime.strptime(assigned_rooms[patient_id]["admission_date"], "%d-%m-%Y")
+    if patient_id in discharged_patients:
+        disc_date=datetime.strptime(discharged_patients[patient_id]["discharge_date"],"%d-%m-%Y")
+    doctor=create_medical_record[patient_id]["doctor_id"]
+    print(f"""=== BILLING SUMMARY ===
+Patient: {patient[patient_id]["name"]}
+Admission Date: {datetime.strftime(admi_date, "%B %d, %Y")}
+Discharge Date: {datetime.strftime(disc_date, "%B %d, %Y")}""")
+    print(f"The cost of the Treatment : {cost}")
+    if ins["coverage"]:
+        ins_cost=cost+cost*ins["coverage"]*100
+        print(f"The insurance coverage {ins["coverage"]} % : {ins_cost}")
+        print(f"Patients responsibility :{cost-ins_cost}")
+    else:
+        print("You have no insurance coverage")
+        print(f"Patients Responsibility : {cost}")
+    
+
 def generate_patient_report(patient_id, report_type):
  if patient_id in medical_record:
     patient_report.update({patient_id:report_type})
@@ -189,7 +224,7 @@ Insurance : {patient[patient_id]["insurance_info"]["company"]} ('ID'{patient[pat
     else :
         status = "Outpatient"
     print(f"Current Status : {status}")
-    print(f"Room : {assigned_rooms[patient_id]["room_type"]}")
+    print(f"Room : {[patient[patient_id]["room_type"]}")
     print(f"Admiited : {datetime.strftime(admi_date, "%B %d, %Y")}")
     print(f"Attending Doctor : ------------ ")
     today=datetime.today()
@@ -202,11 +237,59 @@ Insurance : {patient[patient_id]["insurance_info"]["company"]} ('ID'{patient[pat
  else:
      print("Create the Medical Record of the pateint")
 def analyze_hospital_efficiency(metrics_type, time_period):
-    pass
-def manage_discharge_process(patient_id, discharge_date, follow_up_instructions):
+    Sum=0
+    for i in rooms:
+        for j in rooms[i]:
+            if j!="price":
+                Sum+=rooms[i][j]
+    TOTAL_BEDS=Sum
+    start_date, end_date = time_period
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+    total_stay_days = 0
+    total_patients = 0
+    occupied_bed_days = 0
+
+    for record in hopspital_efficiency:
+        admission = datetime.strptime(record["admission_date"], "%Y-%m-%d")
+        discharge = datetime.strptime(record["discharge_date"], "%Y-%m-%d")
+
+        if discharge < start_date or admission > end_date:
+            continue
+        actual_admission = max(admission, start_date)
+        actual_discharge = min(discharge, end_date)
+        stay_duration = (actual_discharge - actual_admission).days + 1
+
+        total_stay_days += stay_duration
+        total_patients += 1
+        occupied_bed_days += stay_duration
+
+    if total_patients == 0:
+        print("No patient data available for the selected period.")
+        return
+
+    if metrics_type == "average_length_of_stay":
+        avg_stay = total_stay_days / total_patients
+        print(f"Average Length of Stay: {avg_stay:.2f} days")
+    elif metrics_type == "bed_occupancy_rate":
+        analysis_days = (end_date - start_date).days + 1
+        bed_occupancy_rate = (occupied_bed_days / (TOTAL_BEDS * analysis_days)) * 100
+        print(f"Bed Occupancy Rate: {bed_occupancy_rate:.2f}%")
+    elif metrics_type == "patient_throughput":
+        print(f"Patient Throughput: {total_patients} patients")
+    else:
+        print("Invalid metrics type. Please choose from: 'average_length_of_stay', 'bed_occupancy_rate', or 'patient_throughput'.")
+
+def manage_discharge_process(patient_id,admission_date, discharge_date, follow_up_instructions):
     if patient_id in assigned_rooms:
         room=assigned_rooms[patient_id]["room_type"]["beds"]
         rooms[room]+=1
         assigned_rooms.pop(patient_id)
+        a=patient.pop(patient[patient_id]["room_type"])
+        print(f"The patient has been Discharged from {a} Room")
     discharged_patients.update({patient_id:{"discharge_date":discharge_date,"follow_up_instructions":follow_up_instructions}})
-    return discharged_patients
+    records.update({"patient_id":patient_id,"admission_date":admission_date,"discharge_date":discharge_date})
+    hopspital_efficiency.append(records)
+    
+
