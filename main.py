@@ -130,6 +130,7 @@ def manage_emergency_admission(patient_id,admission_date,emergency_type, severit
                             })
     rooms["emergency room"]["beds"]-=1
     patient[patient_id]["room_type"]="emergency room"
+    patient[patient_id["doctor"]]=101243
    
 
 def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
@@ -319,7 +320,7 @@ add_medical_staff(101123,"Dr.Subhash Rao","General Doctor",[
     {"day": "Friday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
     {"day": "Saturday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "OPD/Wards"},
     {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}] , 9929929292)
-add_medical_staff(101243,"Dr.Jay Kumar","Cardiologist",[
+add_medical_staff(101243,"Dr.Jay Kumar","emergency doctor",[
     {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology OPD"},
     {"day": "Tuesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology Ward"},
     {"day": "Wednesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "ICU"},
