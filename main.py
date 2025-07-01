@@ -103,7 +103,7 @@ def doctors_schedule(doctor_id):
         
 
 
-def create_medical_record(patient_id, doctor_id, diagnosis, treatment, prescription):
+def create_medical_record(patient_id, diagnosis, treatment, prescription,doctor_id=101243 ):
  
     for app in appointment[doctor_id]:
         if patient_id == app["patient_id"]:
@@ -131,6 +131,7 @@ def manage_emergency_admission(patient_id,admission_date,emergency_type, severit
     rooms["emergency room"]["beds"]-=1
     patient[patient_id]["room_type"]="emergency room"
     patient[patient_id["doctor"]]=101243
+    
    
 
 def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
@@ -311,7 +312,9 @@ def analyze_hospital_efficiency(metrics_type, time_period):
 
 
 
-# register_patient(123,"Romi",{"age":21,"gender":"Male","blood_type":"O+"},"Diabetes",{"company":"Star Health","policy_no":92394412})
+register_patient(123,"Romi",{"age":21,"gender":"Male","blood_type":"O+"},"Diabetes",{"company":"Star Health","policy_no":92394412})
+register_patient(183,"Alex",{"age":27,"gender":"Male","blood_type":"A+"},"Fracture",{"company":"TX Health","policy_no":67677676})
+
 add_medical_staff(101123,"Dr.Subhash Rao","General Doctor",[
     {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
     {"day": "Tuesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "OPD"},
@@ -339,18 +342,27 @@ add_medical_staff(101143,"Dr.Santosh","Ortho Surgeon",[
     {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}
 ], 7800978543)
 
-# schedule_appointment(123, 101123, '30-6-2025 8:00', "Consultation")
-# schedule_appointment(123, 101123, '30-6-2025 9:00', "Consultation")
-# doctors_schedule(101123)
+# schedule_appointment(123, 101123, '1-7-2025 8:00', "Consultation")
+# schedule_appointment(123, 101123, '1-7-2025 9:00', "Consultation")
+schedule_appointment(183, 101143, '1-7-2025 9:00', "Follow Up")
 
-# create_medical_record(123, 101123, "Type 2 Diabetes Mellitus", "Lifestyle changes, blood sugar monitoring, and oral medications", [
+# doctors_schedule(101123)
+doctors_schedule(101143)
+
+# create_medical_record(123, "Type 2 Diabetes Mellitus", "Lifestyle changes, blood sugar monitoring, and oral medications", [
 #     {"medicine": "Metformin", "dosage": "500mg", "frequency": "Twice a day"},
 #     {"medicine": "Glimepiride", "dosage": "2mg", "frequency": "Once a day"},
-# ])
+# ], 101123)
+create_medical_record(183, "hairline tratment in radius bone", "Immobilization,physiotherapy",[
+    {"medicine": "Ibuprofen", "dosage": "500mg", "frequency": "Twice a day"},
+    {"medicine": "Shelcal", "dosage": "500mg", "frequency": "Once a day"},
+] ,101143)
 
 # assign_room(123,"general room","1-7-2025",4)
+assign_room(183,"private room","2-7-2025",5)
 
 # manage_discharge_process(123,"1-7-2025","4-7-2025","Eat oil free food")
+manage_discharge_process(183,"2-7-2025","7-7-2025","Bed rest and physiotherapy")
 
 # process_billing(123, {
 #     "Room Charges(3 days)":4500,
@@ -359,6 +371,13 @@ add_medical_staff(101143,"Dr.Santosh","Ortho Surgeon",[
 #     "X-Ray": 800,
 #     "Blood Test": 500
 # }, 70)
+process_billing(183, {
+    "Room Charges(5 days)":15000,
+    "Doctor Charges":2000,
+    "X-Ray": 800,
+    "Blood Test": 500,
+    "Fracture Plaster (POP)":2500
+}, 80)
 
 # generate_patient_report(123,{
 #     "blood_test": "Blood Test",
@@ -368,9 +387,17 @@ add_medical_staff(101143,"Dr.Santosh","Ortho Surgeon",[
 #     "ct_scan": "CT Scan",
 #     "ultrasound": "Ultrasound",
 #     "ecg": "ECG",
-#     "biopsy": "Biopsy Report",
 #     "pathology": "Pathology Report",
 #     "surgery_summary": "Surgery Summary"
 # })
+generate_patient_report(183,{
+    "blood_test": "Blood Test",
+    "xray": "X-Ray",
+    "mri": "MRI Scan",
+    "ct_scan": "CT Scan",
+    "ultrasound": "Ultrasound",
+    "ecg": "ECG",
+    "surgery_summary": "Surgery Summary"
+})
 
-# analyze_hospital_efficiency("bed_occupancy_rate",('1-7-2025','7-7-2025'))
+analyze_hospital_efficiency("bed_occupancy_rate",('1-7-2025','7-7-2025'))
