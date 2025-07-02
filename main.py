@@ -36,7 +36,7 @@ def register_patient(patient_id,name,personal_info, medical_history, insurance_i
 
 
 
-def add_medical_staff(staff_id, name, specialization, shift_schedule, contact_info):
+def add_medical_staff(staff_id, name, specialization=None, shift_schedule=None, contact_info=None):
  if staff_id not in medical_staffs:
    medical_staffs.update({
        staff_id:{"name":name,
@@ -96,54 +96,6 @@ def doctors_schedule(doctor_id):
     if not found_today:
         print("No appointments today.")
 
-
-
-
-
-        
-
-
-def create_medical_record(patient_id, diagnosis, treatment, prescription,doctor_id=101243 ):
- 
-    for app in appointment[doctor_id]:
-        if patient_id == app["patient_id"]:
-            medical_record.update({
-                patient_id:{"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription}
-            })
-            print("Medical record Created")
-            break
-    else:
-        print("Register the patient ")
-
-
-def manage_emergency_admission(patient_id,admission_date,emergency_type, severity_level):
-    emergency.update({
-        patient_id:{"emergency_type":emergency_type,"admission_date":admission_date,"severity_level":severity_level}
-    })
-    patient.update({ patient_id:{"name":None,
-                "personal_info":None,
-                "medical_history":"Emergency",
-                "insurance_info":None}
-    })
-    
-    assigned_rooms.update( {patient_id :{"room_type":"emergency room","admission_date":admission_date,"exp_duaration":None}
-                            })
-    rooms["emergency room"]["beds"]-=1
-    patient[patient_id]["room_type"]="emergency room"
-    patient[patient_id["doctor"]]=101243
-    
-   
-
-def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
-    expiry_date=datetime.strptime(expiry_date,"%d-%m-%Y")
-    today=datetime.today()
-    if expiry_date>=today:
-        print("THE MEDICINE HAS EXPIRED")
-    else:
-        medicine.update({
-            medication_id:{"quantity":quantity,"expiry_date":expiry_date,"supplier":supplier}
-        })
-        print("The Medicine has been added to the inventory!")
 rooms={
         "general room":{"beds":20,
         "price":1500},
@@ -173,7 +125,52 @@ def manage_discharge_process(patient_id,admission_date, discharge_date, follow_u
     hopspital_efficiency.append({"patient_id":patient_id,"admission_date":admission_date,"discharge_date":discharge_date})
 
 
-def process_billing(patient_id, services_list, insurance_coverage):
+def manage_emergency_admission(patient_id,doctor_id,admission_date,emergency_type, severity_level):
+    emergency.update({
+        patient_id:{"emergency_type":emergency_type,"admission_date":admission_date,"severity_level":severity_level}
+    })
+    patient.update({ patient_id:{"name":None,
+                "personal_info":None,
+                "medical_history":"Emergency",
+                "insurance_info":None}
+    })
+    
+    assigned_rooms.update( {patient_id :{"room_type":"emergency room","admission_date":admission_date,"exp_duaration":None}
+                            })
+    rooms["emergency room"]["beds"]-=1
+    patient[patient_id]["room_type"]="emergency room"
+    patient[patient_id["doctor"]]=doctor_id
+    
+   
+
+def create_medical_record(patient_id, doctor_id, treatment, prescription, diagnosis ):
+    if patient_id in emergency:
+        medical_record[patient_id].update({"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription})
+ 
+    for app in appointment[doctor_id]:
+        if patient_id == app["patient_id"]:
+            medical_record.update({
+                patient_id:{"doctor_id":doctor_id, "diagnosis":diagnosis, "treatment":treatment, "prescription":prescription}
+            })
+            print("Medical record Created")
+            break
+    else:
+        print("Register the patient ")
+
+
+def track_medication_inventory(medication_id, quantity, expiry_date, supplier):
+    expiry_date=datetime.strptime(expiry_date,"%d-%m-%Y")
+    today=datetime.today()
+    if expiry_date>=today:
+        print("THE MEDICINE HAS EXPIRED")
+    else:
+        medicine.update({
+            medication_id:{"quantity":quantity,"expiry_date":expiry_date,"supplier":supplier}
+        })
+        print("The Medicine has been added to the inventory!")
+
+
+def process_billing(patient_id, services_list, insurance_coverage=None):
     billing.update({
         patient_id:{
         "service_list":services_list,
@@ -312,92 +309,126 @@ def analyze_hospital_efficiency(metrics_type, time_period):
 
 
 
-register_patient(123,"Romi",{"age":21,"gender":"Male","blood_type":"O+"},"Diabetes",{"company":"Star Health","policy_no":92394412})
-register_patient(183,"Alex",{"age":27,"gender":"Male","blood_type":"A+"},"Fracture",{"company":"TX Health","policy_no":67677676})
+while True:
+    print("--------------------------------------------")
+    print("1.To Register a Patient\n2.To add a Medical Staff\n3.To view the Medical Staff\n4.To schedule an Appointment\n5.Emergency Admission\n6.Create medical record\n7.To Assign Room\n8.Discharge from room\n9.Process Biling\n10.Generate Patient Report \n11.Analyze Hospital Efficieny\n12.Exit")
+    ch=input("Enter option : ")
+    if ch=="1":
+        p_id=int(input("Enter patient id : "))
+        p_name=input("Enter name : ")
+        age=int(input("Enter age : "))
+        gender=input("Enter Gender : ")
+        blood_type=input("Enter Blood Type : ")
+        person_info={"age":age,"gender":gender,"blood_type":blood_type}
+        medic_history=input("Enter Medical history : ")
+        ins_com,ins_policy=input("Enter Insurance Details [company] [policy no] : ").split()
+        insurance={"company":ins_com,"policy":ins_policy}
+        register_patient(p_id,p_name,person_info, medic_history, insurance)
+       
+    elif ch=="2":
+        staff=int(input("Enter Staff id [Unique]: "))
+        d_name=input("Enter Staff Name : ")
+        if d_name[0:2]=="Dr":
+            speciality=input("Enter Specialization : ")
+            shift=input("Enter Shift Schedule : ")
+            contact=input("Enter the contact number : ")
+            add_medical_staff(staff, d_name, speciality, shift, contact)
+        else:
+            shift=input("Enter Shift Schedule : ")
+            contact=input("Enter the contact number : ")
+            add_medical_staff(staff, d_name, shift, contact)
+    
+    elif ch=="3":
+        for doc_id,value in medical_staffs.items():
+            print(f"Doctor Id : {doc_id}")
+            for key,val in value.items():
+                print(f"{key} : {val}")
+            print("-----------------------")
+    elif ch=="4":
+        p_id=int(input("Enter Patient Id : "))
+        d_id=int(input("Enter Doctor Id : "))
+        appt_date=input("Enter Appointment date [DD-MM-YYYY H:M] : ")
+        appt_type=input("Enter Appintment Type : ")
+        schedule_appointment(p_id, d_id, appt_date, appt_type)
 
-add_medical_staff(101123,"Dr.Subhash Rao","General Doctor",[
-    {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
-    {"day": "Tuesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "OPD"},
-    {"day": "Wednesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Wards"},
-    {"day": "Thursday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Emergency"},
-    {"day": "Friday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "OPD"},
-    {"day": "Saturday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "OPD/Wards"},
-    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}] , 9929929292)
-add_medical_staff(101243,"Dr.Jay Kumar","emergency doctor",[
-    {"day": "Monday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology OPD"},
-    {"day": "Tuesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cardiology Ward"},
-    {"day": "Wednesday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "ICU"},
-    {"day": "Thursday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Cath Lab"},
-    {"day": "Friday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "OPD & Ward"},
-    {"day": "Saturday", "shift": "On Call", "start": "-", "end": "-", "location": "-"},
-    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}
-], 8800978213)
-add_medical_staff(101143,"Dr.Santosh","Ortho Surgeon",[
-    {"day": "Monday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Neuro OPD"},
-    {"day": "Tuesday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Neuro Ward"},
-    {"day": "Wednesday", "shift": "Full Day", "start": "08:00", "end": "20:00", "location": "Neurology & ICU"},
-    {"day": "Thursday", "shift": "Off", "start": "-", "end": "-", "location": "-"},
-    {"day": "Friday", "shift": "Evening", "start": "14:00", "end": "20:00", "location": "Neuro OPD"},
-    {"day": "Saturday", "shift": "Morning", "start": "08:00", "end": "14:00", "location": "Neuro Ward"},
-    {"day": "Sunday", "shift": "Off", "start": "-", "end": "-", "location": "-"}
-], 7800978543)
+    elif ch=="5":
+        p_id=int(input("Enter Patient Id : "))
+        for doc_id,value in medical_staffs.items():
+            print(f"Doctor Id : {doc_id}")
+            for key,val in value.items():
+                print(f"{key} : {val}")
+            print("-----------------------")
+        d_id=int(input("Enter Doctor Id : "))
+        admi_date=input("Enter Admission date [DD-MM-YYYY] : ")
+        emergency_type=input("Enter Emergency Type : ")
+        s_Level=input("Enter Severity level : ")
+        manage_emergency_admission(p_id,d_id,admi_date,emergency_type, s_Level)
 
-# schedule_appointment(123, 101123, '1-7-2025 8:00', "Consultation")
-# schedule_appointment(123, 101123, '1-7-2025 9:00', "Consultation")
-schedule_appointment(183, 101143, '1-7-2025 9:00', "Follow Up")
+    elif ch=="6":
+        p_id=int(input("Enter Patient Id : "))
+        d_id=int(input("Enter Doctor Id : "))
+        diag=input("Enter Diagnosis : ")
+        treatment=input("Enter Treatment : ")
+        num=int(input("No of Medicines : "))
+        prescription={}
+        for i in range(num):
+            medi=input("Enter Medicine Name : ")
+            dosage=input("Enter Dosage [ex:500mg] : ")
+            freq=input("Enter Frequency [ex:Twice Daily] : ")
+            prescription.update({"medicine":medi,"dosage":dosage,"frequency":freq})
+        create_medical_record(p_id, d_id, diag, treatment, prescription)
+    elif ch=="7":
+        p_id=int(input("Enter Patient Id : "))
+        room_type=input("Enter room_type : ")
+        admi_date=input("Enter Admission date [DD-MM-YYYY] : ")
+        exp_duaration=input("Enter Expected Duration : ")
+        assign_room(p_id, room_type, admi_date, exp_duaration)
+    elif ch=="8":
+        p_id=int(input("Enter Patient Id : "))
+        admi_date=input("Enter Admission date [DD-MM-YYYY] : ")
+        disc_date=input("Enter Discharge date [DD-MM-YYYY] : ")
+        follow_up_instr=input("Enter Follow Up Instruction : ")
 
-# doctors_schedule(101123)
-doctors_schedule(101143)
+        manage_discharge_process(p_id, admi_date, disc_date, follow_up_instr)
 
-# create_medical_record(123, "Type 2 Diabetes Mellitus", "Lifestyle changes, blood sugar monitoring, and oral medications", [
-#     {"medicine": "Metformin", "dosage": "500mg", "frequency": "Twice a day"},
-#     {"medicine": "Glimepiride", "dosage": "2mg", "frequency": "Once a day"},
-# ], 101123)
-create_medical_record(183, "hairline tratment in radius bone", "Immobilization,physiotherapy",[
-    {"medicine": "Ibuprofen", "dosage": "500mg", "frequency": "Twice a day"},
-    {"medicine": "Shelcal", "dosage": "500mg", "frequency": "Once a day"},
-] ,101143)
+    elif ch=="9":
+        p_id=int(input("Enter Patient Id : "))
+        lis=int(input("Enter Number of Services Provided : "))
+        serv_list={}
+        for i in range(lis):
+            a=input("Enter the Services and Price [Services:Price] : ")
+            services,price=a.spilt(":")
+            serv_list[services]=price
+        yn=input("Does the patient has insurance coverage[yes or no] : ").lower()
+        if yn=="yes":
+            c=int(input("Enter Insurance Coverage (ex:60): "))
+            process_billing(p_id, serv_list, c)
+        else:
+            process_billing(p_id, serv_list)
 
-# assign_room(123,"general room","1-7-2025",4)
-assign_room(183,"private room","2-7-2025",5)
+    elif ch=="10":
+        p_id=int(input("Enter Patient Id : "))
+        num=int(input("Enter number of report provided : "))
+        r_type={}
+        for i in range(num):
+            a=input("Enter Patient's Report [BP:67] : ")
+            b,c=a.split(":")
+            r_type[b]=c
+        generate_patient_report(p_id, r_type)
 
-# manage_discharge_process(123,"1-7-2025","4-7-2025","Eat oil free food")
-manage_discharge_process(183,"2-7-2025","7-7-2025","Bed rest and physiotherapy")
+    elif ch=="11":
+        time_period=tuple(input("Enter time period (DD-MM_YYYY,DD-MM-YYYY) : "))
+        print("""Enter Metrics Type \n1.average_length_of_stay\n2.bed_occupancy_rate\n3.patient_throughput """)
+        ch=input("Enter Choice : ")
+        if ch=="1":
+            analyze_hospital_efficiency("average_length_of_stay", time_period)
+        elif ch=="2":
+            analyze_hospital_efficiency("bed_occupancy_rate", time_period)
+        elif ch=="3":
+            analyze_hospital_efficiency("patient_throughput ", time_period)
+            
 
-# process_billing(123, {
-#     "Room Charges(3 days)":4500,
-#     "Doctor Charges":2000,
-#     "Consultation": 1500,
-#     "X-Ray": 800,
-#     "Blood Test": 500
-# }, 70)
-process_billing(183, {
-    "Room Charges(5 days)":15000,
-    "Doctor Charges":2000,
-    "X-Ray": 800,
-    "Blood Test": 500,
-    "Fracture Plaster (POP)":2500
-}, 80)
-
-# generate_patient_report(123,{
-#     "blood_test": "Blood Test",
-#     "urine_test": "Urine Test",
-#     "xray": "X-Ray",
-#     "mri": "MRI Scan",
-#     "ct_scan": "CT Scan",
-#     "ultrasound": "Ultrasound",
-#     "ecg": "ECG",
-#     "pathology": "Pathology Report",
-#     "surgery_summary": "Surgery Summary"
-# })
-generate_patient_report(183,{
-    "blood_test": "Blood Test",
-    "xray": "X-Ray",
-    "mri": "MRI Scan",
-    "ct_scan": "CT Scan",
-    "ultrasound": "Ultrasound",
-    "ecg": "ECG",
-    "surgery_summary": "Surgery Summary"
-})
-
-analyze_hospital_efficiency("bed_occupancy_rate",('1-7-2025','7-7-2025'))
+        
+    elif ch=="12":
+        print("THANK YOU")
+        break
